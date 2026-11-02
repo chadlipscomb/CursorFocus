@@ -11,6 +11,10 @@ struct CursorFocusApp: App {
         } label: {
             MenuIcon(engine: appDelegate.engine, prefs: prefs)
         }
+
+        Settings {
+            SettingsView(engine: appDelegate.engine, prefs: prefs)
+        }
     }
 }
 

@@ -18,6 +18,7 @@ struct MenuIcon: View {
 struct MenuContent: View {
     @ObservedObject var engine: Engine
     @ObservedObject var prefs: Preferences
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         if !engine.running {
@@ -36,6 +37,13 @@ struct MenuContent: View {
         }
 
         Divider()
+        Button("Settings…") {
+            // Menu bar apps aren't active, so the window would open behind
+            // whatever you were using.
+            NSApp.activate()
+            openSettings()
+        }
+        .keyboardShortcut(",")
         Button("Quit CursorFocus") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
