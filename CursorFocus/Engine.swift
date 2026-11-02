@@ -107,9 +107,9 @@ final class Engine: ObservableObject {
         guard prefs.policy.shouldRedirect(KeyPress(event), in: ctx) else { return false }
 
         buffer = [event.copy() ?? event]
-        let app = NSRunningApplication(processIdentifier: target.pid)
-        app?.activate()
-        Task { await finishSwitch(to: target, appName: app?.localizedName ?? "?", started: now) }
+        WindowFocuser.focus(target)
+        let appName = NSRunningApplication(processIdentifier: target.pid)?.localizedName ?? "?"
+        Task { await finishSwitch(to: target, appName: appName, started: now) }
         return true
     }
 
