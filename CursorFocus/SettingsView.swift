@@ -11,6 +11,8 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
             ExclusionSettings(prefs: prefs)
                 .tabItem { Label("Exclusions", systemImage: "nosign") }
+            ShortcutSettings(prefs: prefs)
+                .tabItem { Label("Shortcuts", systemImage: "command") }
             PermissionSettings(engine: engine)
                 .tabItem { Label("Permissions", systemImage: "lock.shield") }
         }
