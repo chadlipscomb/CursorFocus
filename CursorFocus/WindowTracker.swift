@@ -1,10 +1,13 @@
 import AppKit
 
-/// Remembers which window the cursor is over and when it got there.
+/// Remembers which window the cursor is over and when it got there, plus
+/// which window has focus and when that last changed.
 @MainActor
 final class WindowTracker {
     private(set) var hovered: WindowInfo?
     private(set) var hoverEnteredAt = Date.distantPast
+    private(set) var focused: WindowInfo?
+    private(set) var focusChangedAt = Date.distantPast
 
     private var lastUpdate = Date.distantPast
 
@@ -22,5 +25,19 @@ final class WindowTracker {
             hoverEnteredAt = now
         }
         hovered = window
+        refreshFocus(now: now)
+    }
+
+    /// Focus changes (cmd-tab, clicks, new windows) aren't observed directly.
+    /// They're picked up on the next mouse move or key press by comparing
+    /// against the last value we saw.
+    func refreshFocus(now: Date = .now) {
+        let window = NSWorkspace.shared.frontmostApplication.flatMap {
+            Windows.frontmost(of: $0.processIdentifier)
+        }
+        if window?.id != focused?.id {
+            focusChangedAt = now
+        }
+        focused = window
     }
 }
