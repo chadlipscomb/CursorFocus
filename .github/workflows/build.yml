@@ -13,10 +13,8 @@ jobs:
       - run: xcodebuild -version
       - name: Build and test
         run: |
-          xcodebuild test \
+          xcodebuild test -quiet \
             -project CursorFocus.xcodeproj \
             -scheme CursorFocus \
             -destination 'platform=macOS' \
-            CODE_SIGN_IDENTITY=- \
-            | tail -40
-          exit ${PIPESTATUS[0]}
+            CODE_SIGN_IDENTITY=-
