@@ -64,6 +64,20 @@ final class Preferences: ObservableObject {
         passthrough = Self.load([Shortcut].self, from: defaults, key: "passthrough") ?? Shortcut.defaults
     }
 
+    func isExcluded(_ bundleID: String) -> Bool {
+        exclusions.contains { $0.bundleID == bundleID }
+    }
+
+    func exclude(bundleID: String, name: String) {
+        guard !isExcluded(bundleID) else { return }
+        exclusions.append(Exclusion(bundleID: bundleID, name: name))
+        exclusions.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    func removeExclusion(_ bundleID: String) {
+        exclusions.removeAll { $0.bundleID == bundleID }
+    }
+
     var policy: RedirectPolicy {
         RedirectPolicy(window: window, redirectShortcuts: redirectShortcuts,
                        exclusions: exclusions, passthrough: passthrough)

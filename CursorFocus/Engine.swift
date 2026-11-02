@@ -13,8 +13,15 @@ final class Engine: ObservableObject {
         var at: Date
     }
 
+    struct AppRef: Equatable {
+        var bundleID: String
+        var name: String
+    }
+
     @Published private(set) var running = false
     @Published private(set) var lastRedirect: Redirect?
+    /// Most recent app other than us, for the "Exclude …" menu item.
+    @Published private(set) var lastActiveApp: AppRef?
 
     private let prefs: Preferences
     private let tracker = WindowTracker()
@@ -29,6 +36,19 @@ final class Engine: ObservableObject {
 
     init(prefs: Preferences) {
         self.prefs = prefs
+        _ = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.noteActiveApp() }
+        }
+        noteActiveApp()
+    }
+
+    private func noteActiveApp() {
+        guard let app = NSWorkspace.shared.frontmostApplication, app != .current,
+              let id = app.bundleIdentifier
+        else { return }
+        lastActiveApp = AppRef(bundleID: id, name: app.localizedName ?? id)
     }
 
     /// Accessibility can be granted while we're running, so keep checking

@@ -9,6 +9,8 @@ struct SettingsView: View {
         TabView {
             GeneralSettings(prefs: prefs)
                 .tabItem { Label("General", systemImage: "gearshape") }
+            ExclusionSettings(prefs: prefs)
+                .tabItem { Label("Exclusions", systemImage: "nosign") }
             PermissionSettings(engine: engine)
                 .tabItem { Label("Permissions", systemImage: "lock.shield") }
         }
