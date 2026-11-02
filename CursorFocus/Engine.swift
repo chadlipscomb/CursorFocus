@@ -104,7 +104,7 @@ final class Engine: ObservableObject {
                 buffer?.append(event.copy() ?? event)
                 return false
             }
-            guard type == .keyDown, prefs.enabled else { return true }
+            guard type == .keyDown, prefs.isActive else { return true }
             return !redirectIfNeeded(event)
 
         default:

@@ -47,6 +47,14 @@ final class Preferences: ObservableObject {
     @Published var passthrough: [Shortcut] {
         didSet { save(passthrough, forKey: "passthrough") }
     }
+    @Published var pausedUntil: Date? {
+        didSet {
+            defaults.set(pausedUntil, forKey: "pausedUntil")
+            scheduleResume()
+        }
+    }
+
+    private var resumeTask: Task<Void, Never>?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -62,6 +70,31 @@ final class Preferences: ObservableObject {
         raiseWindow = defaults.bool(forKey: "raiseWindow")
         exclusions = Self.load([Exclusion].self, from: defaults, key: "exclusions") ?? []
         passthrough = Self.load([Shortcut].self, from: defaults, key: "passthrough") ?? Shortcut.defaults
+        pausedUntil = (defaults.object(forKey: "pausedUntil") as? Date).flatMap { $0 > .now ? $0 : nil }
+        scheduleResume()
+    }
+
+    /// Enabled and not paused.
+    var isActive: Bool {
+        enabled && pausedUntil == nil
+    }
+
+    func pause(for interval: TimeInterval) {
+        pausedUntil = Date.now.addingTimeInterval(interval)
+    }
+
+    func pauseUntilTomorrow() {
+        let calendar = Calendar.current
+        pausedUntil = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: .now)!)
+    }
+
+    private func scheduleResume() {
+        resumeTask?.cancel()
+        guard let until = pausedUntil else { return }
+        resumeTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(max(0, until.timeIntervalSinceNow)))
+            if !Task.isCancelled { self?.pausedUntil = nil }
+        }
     }
 
     func isExcluded(_ bundleID: String) -> Bool {

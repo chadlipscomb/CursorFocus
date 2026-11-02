@@ -7,7 +7,7 @@ struct MenuIcon: View {
     var body: some View {
         if !engine.running {
             Image(systemName: "exclamationmark.triangle")
-        } else if prefs.enabled {
+        } else if prefs.isActive {
             Image(systemName: "cursorarrow.rays")
         } else {
             Image(systemName: "cursorarrow.slash")
@@ -30,6 +30,20 @@ struct MenuContent: View {
         }
 
         Toggle("Enabled", isOn: $prefs.enabled)
+
+        if let until = prefs.pausedUntil {
+            Text("Paused until \(until.formatted(date: .omitted, time: .shortened))")
+            Button("Resume") { prefs.pausedUntil = nil }
+        } else {
+            Menu("Pause") {
+                Button("For 15 Minutes") { prefs.pause(for: 15 * 60) }
+                Button("For 1 Hour") { prefs.pause(for: 60 * 60) }
+                Button("Until Tomorrow") { prefs.pauseUntilTomorrow() }
+            }
+            .disabled(!prefs.enabled)
+        }
+
+        Divider()
 
         if let app = engine.lastActiveApp {
             if prefs.isExcluded(app.bundleID) {
