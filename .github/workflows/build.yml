@@ -17,4 +17,8 @@ jobs:
             -project CursorFocus.xcodeproj \
             -scheme CursorFocus \
             -destination 'platform=macOS' \
+            -resultBundlePath TestResults.xcresult \
             CODE_SIGN_IDENTITY=-
+      - name: Test summary
+        if: always()
+        run: xcrun xcresulttool get test-results summary --path TestResults.xcresult --compact
