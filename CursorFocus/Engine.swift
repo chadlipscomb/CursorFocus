@@ -31,9 +31,18 @@ final class Engine: ObservableObject {
         self.prefs = prefs
     }
 
+    /// Accessibility can be granted while we're running, so keep checking
+    /// instead of making the user relaunch.
+    func startWhenAllowed() async {
+        while !start() {
+            try? await Task.sleep(for: .seconds(1))
+        }
+    }
+
     @discardableResult
     func start() -> Bool {
         if tap != nil { return true }
+        guard Permissions.accessibilityGranted else { return false }
 
         let types: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .mouseMoved, .leftMouseDragged, .rightMouseDragged]
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
