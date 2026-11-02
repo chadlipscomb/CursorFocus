@@ -187,7 +187,9 @@ private func tapCallback(
 ) -> Unmanaged<CGEvent>? {
     guard let userInfo else { return Unmanaged.passUnretained(event) }
     let engine = Unmanaged<Engine>.fromOpaque(userInfo).takeUnretainedValue()
-    // The tap's run loop source is on the main run loop.
+    // The tap's run loop source is on the main run loop, so the event never
+    // actually crosses threads. Older compilers can't see that.
+    nonisolated(unsafe) let event = event
     let pass = MainActor.assumeIsolated { engine.handle(type, event) }
     return pass ? Unmanaged.passUnretained(event) : nil
 }
