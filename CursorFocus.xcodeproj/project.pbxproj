@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		0A155CA812FC55DE0AB407F9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC433FC9F6D20595BC27BAD7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 836C252E3CB80F1D2CF9BBC2;
+			remoteInfo = CursorFocus;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		2EF47984DC3BFF6A6829F9F7 /* CursorFocusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CursorFocusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9E94F1993FABDFCCD3DACCB /* CursorFocus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CursorFocus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -20,6 +31,15 @@
 			path = CursorFocus;
 			sourceTree = "<group>";
 		};
+		6031F3795606E0715A3DADA5 /* CursorFocusTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = CursorFocusTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
@@ -27,6 +47,7 @@
 			isa = PBXGroup;
 			children = (
 				F9E94F1993FABDFCCD3DACCB /* CursorFocus.app */,
+				2EF47984DC3BFF6A6829F9F7 /* CursorFocusTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -35,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				37CE149CE5D12871783D6F9F /* CursorFocus */,
+				6031F3795606E0715A3DADA5 /* CursorFocusTests */,
 				16BE123B201B5AF861E15348 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -42,6 +64,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		40DAA641C256FE9364C61B90 /* CursorFocusTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7CDF81F95C20E439790F9A0C /* Build configuration list for PBXNativeTarget "CursorFocusTests" */;
+			buildPhases = (
+				28869A1341CFC8B1EB088651 /* Sources */,
+				F81EA46ADE4ADB3DF7261EFB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A318BE38DA2ED36EB4A646CB /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6031F3795606E0715A3DADA5 /* CursorFocusTests */,
+			);
+			name = CursorFocusTests;
+			packageProductDependencies = (
+			);
+			productName = CursorFocusTests;
+			productReference = 2EF47984DC3BFF6A6829F9F7 /* CursorFocusTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		836C252E3CB80F1D2CF9BBC2 /* CursorFocus */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F619D254C5826DA8B23EE476 /* Build configuration list for PBXNativeTarget "CursorFocus" */;
@@ -92,6 +136,7 @@
 			projectRoot = "";
 			targets = (
 				836C252E3CB80F1D2CF9BBC2 /* CursorFocus */,
+				40DAA641C256FE9364C61B90 /* CursorFocusTests */,
 			);
 		};
 /* End PBXProject section */
@@ -104,9 +149,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F81EA46ADE4ADB3DF7261EFB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		28869A1341CFC8B1EB088651 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D74B7F38EE8667CCBCB13CDA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +174,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A318BE38DA2ED36EB4A646CB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 836C252E3CB80F1D2CF9BBC2 /* CursorFocus */;
+			targetProxy = 0A155CA812FC55DE0AB407F9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		09E56CED9DF8D1AD136595B8 /* Release */ = {
@@ -238,6 +305,42 @@
 			};
 			name = Debug;
 		};
+		3CCB0A6C7DF71F5D5D2F7E2E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chadlipscomb.CursorFocusTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CursorFocus.app/Contents/MacOS/CursorFocus";
+			};
+			name = Debug;
+		};
+		3D3FD31F3A7FAE31697A888B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chadlipscomb.CursorFocusTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CursorFocus.app/Contents/MacOS/CursorFocus";
+			};
+			name = Release;
+		};
 		8C0A2226C5B5044A97CEBC25 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -287,6 +390,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7CDF81F95C20E439790F9A0C /* Build configuration list for PBXNativeTarget "CursorFocusTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CCB0A6C7DF71F5D5D2F7E2E /* Debug */,
+				3D3FD31F3A7FAE31697A888B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		B4334EEA88BF80F58237D599 /* Build configuration list for PBXProject "CursorFocus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
