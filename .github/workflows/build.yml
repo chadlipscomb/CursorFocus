@@ -9,14 +9,14 @@ jobs:
   test:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: xcodebuild -version
       - name: Build and test
         run: |
           xcodebuild test -quiet \
             -project CursorFocus.xcodeproj \
             -scheme CursorFocus \
-            -destination 'platform=macOS' \
+            -destination 'platform=macOS,arch=arm64' \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGN_IDENTITY=-
       - name: Test summary
