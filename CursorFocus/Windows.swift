@@ -30,14 +30,48 @@ enum Windows {
 
     /// The normal app window under `point`, or nil if the point is over the
     /// Dock, menu bar, a menu, a floating panel, the desktop, or our own windows.
+    @MainActor
     static func under(_ point: CGPoint) -> WindowInfo? {
-        let ownPID = ProcessInfo.processInfo.processIdentifier
-        for entry in list() {
-            guard let (window, layer) = info(entry), window.bounds.contains(point) else { continue }
-            if window.pid == ownPID || layer != 0 { return nil }
-            return window
+        // The Dock and menu bar are drawn in windows that span the whole
+        // display, so they're ruled out by position instead.
+        guard usableAreas().contains(where: { $0.contains(point) }) else { return nil }
+        return hit(point,
+                   in: list().compactMap(info),
+                   displays: displayBounds(),
+                   ownPID: ProcessInfo.processInfo.processIdentifier)
+    }
+
+    /// `windows` front to back. Split out from `under` so it can be tested
+    /// without a window server.
+    static func hit(_ point: CGPoint, in windows: [(window: WindowInfo, layer: Int)],
+                    displays: [CGRect], ownPID: pid_t) -> WindowInfo? {
+        for (window, layer) in windows where window.bounds.contains(point) {
+            if window.pid == ownPID { return nil }
+            if layer == 0 { return window }
+            // The Dock keeps an invisible window over the entire display, above
+            // everything else. Anything that size isn't something you'd be
+            // pointing at, so look through it.
+            if displays.contains(window.bounds) { continue }
+            return nil
         }
         return nil
+    }
+
+    private static func displayBounds() -> [CGRect] {
+        var ids = [CGDirectDisplayID](repeating: 0, count: 16)
+        var count: UInt32 = 0
+        CGGetActiveDisplayList(UInt32(ids.count), &ids, &count)
+        return ids.prefix(Int(count)).map(CGDisplayBounds)
+    }
+
+    /// Each screen minus the menu bar and Dock, flipped into window coordinates.
+    @MainActor
+    private static func usableAreas() -> [CGRect] {
+        guard let primary = NSScreen.screens.first?.frame else { return [] }
+        return NSScreen.screens.map {
+            let r = $0.visibleFrame
+            return CGRect(x: r.minX, y: primary.maxY - r.maxY, width: r.width, height: r.height)
+        }
     }
 
     /// The frontmost normal window belonging to `pid`. For the active app this
