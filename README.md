@@ -53,12 +53,15 @@ On first launch macOS asks for Accessibility access. See
 [docs/development.md](docs/development.md) for why that grant disappears after
 rebuilding and what to do about it.
 
+The `CursorFocus App Store` scheme builds the sandboxed variant. See
+[docs/app-store.md](docs/app-store.md).
+
 ## Docs
 
 - [Spec](docs/spec.md)
 - [Architecture](docs/architecture.md)
 - [Focusing windows](docs/focusing.md)
-- [App Store notes](docs/app-store.md)
+- [Getting on the App Store](docs/app-store.md), [listing](docs/app-store-listing.md), [privacy policy](docs/privacy.md)
 - [Development](docs/development.md)
 
 Planning happens on the [project board](https://github.com/users/chadlipscomb/projects/2).

@@ -26,10 +26,10 @@ helper processes.
 | `WindowTracker.swift` | Hovered window, focused window, and their timestamps |
 | `Windows.swift` | Hit testing and lookups over `CGWindowListCopyWindowInfo` |
 | `RedirectPolicy.swift` | The rules. No side effects, covered by tests |
-| `WindowFocuser.swift` | Focuses a specific window with public AX calls |
+| `WindowFocuser.swift` | Focuses a specific window: public AX calls, or a click on its top edge in the App Store build |
 | `Shortcut.swift` | Modifiers, key presses, passthrough shortcuts and defaults |
 | `Preferences.swift` | Settings in `UserDefaults`, exclusions, pause |
-| `Permissions.swift` | Accessibility check, prompt, and deep link |
+| `Permissions.swift` | Permission check, prompt, and deep link (Accessibility, or Input Monitoring + event posting in the App Store build) |
 | `MenuContent.swift` | Menu bar menu and icon |
 | `SettingsView.swift`, `ExclusionSettings.swift`, `ShortcutSettings.swift` | Settings window tabs |
 
@@ -50,6 +50,16 @@ helper processes.
 
 Keys are never dropped. If focusing times out, the buffer is replayed to
 whatever has focus at that point.
+
+## Two builds
+
+The **CursorFocus** scheme builds the direct-download app: not sandboxed,
+Accessibility for everything. The **CursorFocus App Store** scheme uses the
+AppStore configuration, which is sandboxed and compiles with `APP_STORE`.
+Only `Permissions` and `WindowFocuser` differ, behind `#if APP_STORE`. If the
+system won't allow an event tap that can swallow keys, `Engine` falls back to
+a listen-only tap, which still supports switch on hover. See
+[app-store.md](app-store.md).
 
 ## Focus tracking without AX
 
