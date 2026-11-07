@@ -103,4 +103,27 @@ struct RedirectPolicyTests {
         let policy = RedirectPolicy(exclusions: [Exclusion(bundleID: "com.apple.Terminal", name: "Terminal", mode: .neverFocusInto)])
         #expect(policy.shouldRedirect(typeH, in: context()))
     }
+
+    // MARK: Switch on hover
+
+    @Test func hoverFocusesAnotherWindow() {
+        // The delay is the engine's job, so the hover age doesn't matter here.
+        #expect(RedirectPolicy().shouldFocusOnHover(in: context(enteredAgo: 30)))
+    }
+
+    @Test func hoverFollowsTheSameRules() {
+        let policy = RedirectPolicy()
+        #expect(!policy.shouldFocusOnHover(in: context(enteredAgo: 2, focusChangedAgo: 1)))
+
+        var ctx = context()
+        ctx.mouseButtonDown = true
+        #expect(!policy.shouldFocusOnHover(in: ctx))
+
+        ctx = context()
+        ctx.hovered = a
+        #expect(!policy.shouldFocusOnHover(in: ctx))
+
+        let excluded = RedirectPolicy(exclusions: [Exclusion(bundleID: "com.apple.Safari", name: "Safari")])
+        #expect(!excluded.shouldFocusOnHover(in: context()))
+    }
 }

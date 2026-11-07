@@ -31,6 +31,11 @@ final class Engine: ObservableObject {
     /// target window has focus, then gets posted again in order.
     private var buffer: [CGEvent]?
 
+    /// Pending "switch on hover", restarted whenever the pointer moves onto a
+    /// different window.
+    private var hoverTask: Task<Void, Never>?
+    private var hoverTarget: CGWindowID?
+
     /// Stamped on events we post so the tap lets them through.
     private static let replayMarker: Int64 = 0x4346_4F43
 
@@ -96,6 +101,7 @@ final class Engine: ObservableObject {
 
         case .mouseMoved, .leftMouseDragged, .rightMouseDragged:
             tracker.mouseMoved(to: event.location)
+            scheduleHoverFocus()
             return true
 
         case .keyDown, .keyUp, .flagsChanged:
@@ -123,23 +129,64 @@ final class Engine: ObservableObject {
         let cursor = CGEvent(source: nil)?.location ?? event.location
         tracker.update(point: cursor, now: now)
 
-        guard let target = tracker.hovered else { return false }
-
-        let ctx = RedirectPolicy.Context(
-            hovered: Self.target(for: target),
-            hoverEnteredAt: tracker.hoverEnteredAt,
-            focused: tracker.focused.map(Self.target(for:)),
-            focusChangedAt: tracker.focusChangedAt,
-            mouseButtonDown: Self.mouseButtonDown,
-            now: now
-        )
-        guard prefs.policy.shouldRedirect(KeyPress(event), in: ctx) else { return false }
+        guard let target = tracker.hovered,
+              prefs.policy.shouldRedirect(KeyPress(event), in: context(target, now: now))
+        else { return false }
 
         buffer = [event.copy() ?? event]
         WindowFocuser.focus(target)
         let appName = NSRunningApplication(processIdentifier: target.pid)?.localizedName ?? "?"
         Task { await finishSwitch(to: target, appName: appName, started: now) }
         return true
+    }
+
+    private func scheduleHoverFocus() {
+        guard prefs.focusOnHover, prefs.isActive else {
+            hoverTask?.cancel()
+            hoverTarget = nil
+            return
+        }
+        let id = tracker.hovered?.id
+        guard id != hoverTarget else { return }
+        hoverTarget = id
+        hoverTask?.cancel()
+        guard id != nil else { return }
+
+        let delay = prefs.hoverDelay
+        hoverTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            if !Task.isCancelled { self?.focusOnHover() }
+        }
+    }
+
+    private func focusOnHover() {
+        // A key press already took care of it, or we're in our own settings.
+        if buffer != nil { return }
+        if NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier {
+            return
+        }
+
+        let now = Date()
+        tracker.update(point: CGEvent(source: nil)?.location ?? .zero, now: now)
+        guard let target = tracker.hovered, target.id == hoverTarget,
+              prefs.policy.shouldFocusOnHover(in: context(target, now: now))
+        else { return }
+
+        WindowFocuser.focus(target)
+        let appName = NSRunningApplication(processIdentifier: target.pid)?.localizedName ?? "?"
+        log.info("Focused \(appName, privacy: .public) on hover")
+        lastRedirect = Redirect(appName: appName, at: now)
+    }
+
+    private func context(_ hovered: WindowInfo, now: Date) -> RedirectPolicy.Context {
+        RedirectPolicy.Context(
+            hovered: Self.target(for: hovered),
+            hoverEnteredAt: tracker.hoverEnteredAt,
+            focused: tracker.focused.map(Self.target(for:)),
+            focusChangedAt: tracker.focusChangedAt,
+            mouseButtonDown: Self.mouseButtonDown,
+            now: now
+        )
     }
 
     private func finishSwitch(to target: WindowInfo, appName: String, started: Date) async {

@@ -41,6 +41,14 @@ final class Preferences: ObservableObject {
     @Published var raiseWindow: Bool {
         didSet { defaults.set(raiseWindow, forKey: "raiseWindow") }
     }
+    /// Focus the window under the pointer once it has been there for
+    /// `hoverDelay` seconds, without waiting for a key press.
+    @Published var focusOnHover: Bool {
+        didSet { defaults.set(focusOnHover, forKey: "focusOnHover") }
+    }
+    @Published var hoverDelay: Double {
+        didSet { defaults.set(hoverDelay, forKey: "hoverDelay") }
+    }
     @Published var exclusions: [Exclusion] {
         didSet { save(exclusions, forKey: "exclusions") }
     }
@@ -63,11 +71,15 @@ final class Preferences: ObservableObject {
             "window": 3.0,
             "redirectShortcuts": true,
             "raiseWindow": true,
+            "focusOnHover": false,
+            "hoverDelay": 0.5,
         ])
         enabled = defaults.bool(forKey: "enabled")
         window = defaults.double(forKey: "window")
         redirectShortcuts = defaults.bool(forKey: "redirectShortcuts")
         raiseWindow = defaults.bool(forKey: "raiseWindow")
+        focusOnHover = defaults.bool(forKey: "focusOnHover")
+        hoverDelay = defaults.double(forKey: "hoverDelay")
         exclusions = Self.load([Exclusion].self, from: defaults, key: "exclusions") ?? []
         passthrough = Self.load([Shortcut].self, from: defaults, key: "passthrough") ?? Shortcut.defaults
         pausedUntil = (defaults.object(forKey: "pausedUntil") as? Date).flatMap { $0 > .now ? $0 : nil }
