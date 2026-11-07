@@ -19,6 +19,10 @@ final class Engine: ObservableObject {
     }
 
     @Published private(set) var running = false
+    /// The tap could only be created listen-only, so keys can't be held back
+    /// and replayed. Switch on hover still works. Expected to happen, if at
+    /// all, in the sandboxed build.
+    @Published private(set) var listenOnly = false
     @Published private(set) var lastRedirect: Redirect?
     /// Most recent app other than us, for the "Exclude …" menu item.
     @Published private(set) var lastActiveApp: AppRef?
@@ -61,7 +65,7 @@ final class Engine: ObservableObject {
         lastActiveApp = AppRef(bundleID: id, name: app.localizedName ?? id)
     }
 
-    /// Accessibility can be granted while we're running, so keep checking
+    /// Permission can be granted while we're running, so keep checking
     /// instead of making the user relaunch.
     func startWhenAllowed() async {
         while !start() {
@@ -72,19 +76,24 @@ final class Engine: ObservableObject {
     @discardableResult
     func start() -> Bool {
         if tap != nil { return true }
-        guard Permissions.accessibilityGranted else { return false }
+        guard Permissions.granted else { return false }
 
         let types: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .mouseMoved, .leftMouseDragged, .rightMouseDragged]
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
 
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: mask,
-            callback: tapCallback,
-            userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else {
+        func create(_ options: CGEventTapOptions) -> CFMachPort? {
+            CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: options,
+                              eventsOfInterest: mask, callback: tapCallback,
+                              userInfo: Unmanaged.passUnretained(self).toOpaque())
+        }
+        let tap: CFMachPort
+        if let active = create(.defaultTap) {
+            tap = active
+        } else if let passive = create(.listenOnly) {
+            log.error("Only a listen-only event tap is allowed, typing won't be redirected")
+            tap = passive
+            listenOnly = true
+        } else {
             log.error("Couldn't create event tap")
             return false
         }
@@ -115,7 +124,7 @@ final class Engine: ObservableObject {
                 buffer?.append(event.copy() ?? event)
                 return false
             }
-            guard type == .keyDown, prefs.isActive else { return true }
+            guard type == .keyDown, !listenOnly, prefs.isActive else { return true }
             return !redirectIfNeeded(event)
 
         default:

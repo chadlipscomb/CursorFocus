@@ -26,8 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Hosted unit tests launch the app too. No tap or prompts there.
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return }
 
-        if !Permissions.accessibilityGranted {
-            Permissions.requestAccessibility()
+        if !Permissions.granted {
+            Permissions.request()
         }
         Task { await engine.startWhenAllowed() }
     }

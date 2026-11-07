@@ -1,6 +1,43 @@
 import AppKit
 import ApplicationServices
 
+#if APP_STORE
+
+/// Brings a specific window forward and makes it key without Accessibility,
+/// which the sandbox doesn't allow. Clicks the window's top edge, where
+/// almost every app has title bar or resize area rather than content, then
+/// puts the pointer back.
+enum WindowFocuser {
+    @MainActor
+    static func focus(_ target: WindowInfo) {
+        // Part of the top edge can be under another window, and a click
+        // there would land in the wrong app.
+        let b = target.bounds
+        let edge = [0.5, 0.25, 0.75]
+            .map { CGPoint(x: b.minX + b.width * $0, y: b.minY + 2) }
+            .first { Windows.under($0)?.id == target.id }
+        guard let edge else {
+            NSRunningApplication(processIdentifier: target.pid)?.activate()
+            return
+        }
+
+        let source = CGEventSource(stateID: .hidSystemState)
+        let pointer = CGEvent(source: nil)?.location
+
+        for type in [CGEventType.leftMouseDown, .leftMouseUp] {
+            CGEvent(mouseEventSource: source, mouseType: type, mouseCursorPosition: edge, mouseButton: .left)?
+                .post(tap: .cghidEventTap)
+        }
+        if let pointer {
+            CGWarpMouseCursorPosition(pointer)
+            // Warping stalls pointer movement briefly unless this is reset.
+            CGAssociateMouseAndMouseCursorPosition(1)
+        }
+    }
+}
+
+#else
+
 /// Brings a specific window forward and makes it key, using only public
 /// Accessibility API plus NSRunningApplication.
 enum WindowFocuser {
@@ -51,3 +88,5 @@ enum WindowFocuser {
         return CGRect(origin: origin, size: extent)
     }
 }
+
+#endif

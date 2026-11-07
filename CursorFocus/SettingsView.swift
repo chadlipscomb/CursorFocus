@@ -93,13 +93,13 @@ struct PermissionSettings: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Accessibility") {
+                LabeledContent(Permissions.name) {
                     if engine.running {
                         Label("Granted", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                     } else {
                         Button("Open System Settings…") {
-                            Permissions.openAccessibilitySettings()
+                            Permissions.openSettings()
                         }
                     }
                 }

@@ -22,10 +22,13 @@ struct MenuContent: View {
 
     var body: some View {
         if !engine.running {
-            Text("Needs Accessibility access")
-            Button("Open Accessibility Settings…") {
-                Permissions.openAccessibilitySettings()
+            Text("Needs \(Permissions.name) access")
+            Button("Open \(Permissions.name) Settings…") {
+                Permissions.openSettings()
             }
+            Divider()
+        } else if engine.listenOnly {
+            Text("Typing can't be redirected, only switch on hover works")
             Divider()
         }
 
