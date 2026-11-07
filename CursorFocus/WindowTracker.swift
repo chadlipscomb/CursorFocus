@@ -28,9 +28,10 @@ final class WindowTracker {
         refreshFocus(now: now)
     }
 
-    /// Focus changes (cmd-tab, clicks, new windows) aren't observed directly.
-    /// They're picked up on the next mouse move or key press by comparing
-    /// against the last value we saw.
+    /// App switches are reported by the engine as they happen. Window changes
+    /// within an app (clicks, new windows) aren't observed directly; they're
+    /// picked up on the next mouse move or key press by comparing against the
+    /// last value we saw.
     func refreshFocus(now: Date = .now) {
         let window = NSWorkspace.shared.frontmostApplication.flatMap {
             Windows.frontmost(of: $0.processIdentifier)
@@ -39,5 +40,12 @@ final class WindowTracker {
             focusChangedAt = now
         }
         focused = window
+    }
+
+    /// We just moved focus ourselves, so there's no need to wait for the next
+    /// mouse move to notice.
+    func focusMoved(to window: WindowInfo, at now: Date = .now) {
+        focused = window
+        focusChangedAt = now
     }
 }

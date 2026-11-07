@@ -44,7 +44,12 @@ final class Engine: ObservableObject {
         _ = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.noteActiveApp() }
+            MainActor.assumeIsolated {
+                self?.noteActiveApp()
+                // Without this, a cmd-tab only registers on the next mouse
+                // move, and can tie with a hover that starts on that same move.
+                self?.tracker.refreshFocus()
+            }
         }
         noteActiveApp()
     }
@@ -120,10 +125,10 @@ final class Engine: ObservableObject {
 
     /// Returns true if the event was taken.
     private func redirectIfNeeded(_ event: CGEvent) -> Bool {
-        // Typing in our own settings window should never be redirected.
-        if NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier {
-            return false
-        }
+        // Typing in our own settings window should never be redirected. We can
+        // also be active with no window at all after Settings closes, which
+        // shouldn't count.
+        if NSApp.isActive && NSApp.keyWindow != nil { return false }
 
         let now = Date()
         let cursor = CGEvent(source: nil)?.location ?? event.location
@@ -135,6 +140,7 @@ final class Engine: ObservableObject {
 
         buffer = [event.copy() ?? event]
         WindowFocuser.focus(target)
+        tracker.focusMoved(to: target, at: now)
         let appName = NSRunningApplication(processIdentifier: target.pid)?.localizedName ?? "?"
         Task { await finishSwitch(to: target, appName: appName, started: now) }
         return true
@@ -150,9 +156,10 @@ final class Engine: ObservableObject {
         guard id != hoverTarget else { return }
         hoverTarget = id
         hoverTask?.cancel()
-        guard id != nil else { return }
+        guard let id else { return }
 
         let delay = prefs.hoverDelay
+        log.debug("Hover: entered \(id), waiting \(delay) s")
         hoverTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(delay))
             if !Task.isCancelled { self?.focusOnHover() }
@@ -160,19 +167,27 @@ final class Engine: ObservableObject {
     }
 
     private func focusOnHover() {
-        // A key press already took care of it, or we're in our own settings.
+        // A key press already took care of it.
         if buffer != nil { return }
-        if NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier {
-            return
-        }
 
         let now = Date()
         tracker.update(point: CGEvent(source: nil)?.location ?? .zero, now: now)
-        guard let target = tracker.hovered, target.id == hoverTarget,
-              prefs.policy.shouldFocusOnHover(in: context(target, now: now))
-        else { return }
+        guard let target = tracker.hovered, target.id == hoverTarget else {
+            log.debug("Hover: pointer left window \(self.hoverTarget ?? 0)")
+            return
+        }
+        let ctx = context(target, now: now)
+        guard prefs.policy.shouldFocusOnHover(in: ctx) else {
+            log.debug("""
+                Hover: not focusing \(target.id), focused \(ctx.focused?.windowID ?? 0), \
+                entered \(ctx.hoverEnteredAt.timeIntervalSince(ctx.focusChangedAt), format: .fixed(precision: 3)) s \
+                after focus changed, button down \(ctx.mouseButtonDown)
+                """)
+            return
+        }
 
         WindowFocuser.focus(target)
+        tracker.focusMoved(to: target, at: now)
         let appName = NSRunningApplication(processIdentifier: target.pid)?.localizedName ?? "?"
         log.info("Focused \(appName, privacy: .public) on hover")
         lastRedirect = Redirect(appName: appName, at: now)
