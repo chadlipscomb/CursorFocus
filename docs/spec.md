@@ -7,7 +7,8 @@ window A, move the mouse over window B to read or scroll it, start typing or
 hit cmd-F, and it all goes into A.
 
 CursorFocus makes that first key press go to B, as long as you moved onto B
-recently. Hovering alone never changes focus.
+recently. By default hovering alone never changes focus; see "Switch on
+hover" below.
 
 ## Rules
 
@@ -36,6 +37,16 @@ Once redirected, W has focus, so the following keys go there normally.
 - Never: modifier-only presses, key repeat, media and brightness keys
 
 "Redirect shortcuts" (default on) can be turned off so only typing redirects.
+
+### Switch on hover
+
+Off by default. When on, resting the pointer on a window for the hover delay
+(0.1 to 2 s, default 0.5) focuses it without a key press. Rules 1, 2, 4, 5 and
+7 still apply, so a cmd-tab while the pointer sits on another window sticks.
+The delay restarts each time the pointer moves onto a different window.
+Typing before the delay is up redirects as usual.
+
+With public APIs the window is raised, so this behaves like auto-raise.
 
 ### Passthrough shortcuts
 
@@ -90,8 +101,8 @@ missing.
 
 ## Settings
 
-- General: enabled, time window (0.5 to 10 s), redirect shortcuts, raise
-  window, launch at login
+- General: enabled, time window (0.5 to 10 s), switch on hover and its
+  delay, redirect shortcuts, raise window, launch at login
 - Exclusions
 - Shortcuts: passthrough list, record, restore defaults
 - Permissions: Accessibility status and a link to System Settings
@@ -114,7 +125,7 @@ debug panel, toggle hotkey, sandboxed build.
 
 ## Out of scope
 
-- Continuous focus-follows-mouse or auto-raise
+- Focus-follows-mouse without raising (needs private API, #20)
 - Moving the pointer to follow focus
 - Redirecting mouse or scroll events (macOS already scrolls the hovered
   window)

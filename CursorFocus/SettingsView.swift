@@ -43,6 +43,21 @@ struct GeneralSettings: View {
             }
 
             Section {
+                Toggle("Switch on hover", isOn: $prefs.focusOnHover)
+                LabeledContent("Delay") {
+                    HStack {
+                        Slider(value: $prefs.hoverDelay, in: 0.1...2, step: 0.1)
+                        Text(prefs.hoverDelay.formatted(.number.precision(.fractionLength(1))) + " s")
+                            .monospacedDigit()
+                            .frame(width: 44, alignment: .trailing)
+                    }
+                }
+                .disabled(!prefs.focusOnHover)
+            } footer: {
+                Text("Focus the window under the pointer once it has been there this long, without waiting for you to type. The window comes to the front.")
+            }
+
+            Section {
                 Toggle("Redirect shortcuts", isOn: $prefs.redirectShortcuts)
             } footer: {
                 Text("When off, only plain typing follows the pointer. ⌘ and ⌃ shortcuts stay with the focused window.")

@@ -3,9 +3,10 @@
 Menu bar app for macOS. If you move the mouse over a window and start typing,
 your keystrokes go to that window instead of the one that still has focus.
 
-It is not focus-follows-mouse. Hovering never changes anything on its own.
-Only the first key press after you move onto a window does, and only if you
-moved there in the last few seconds.
+By default it is not focus-follows-mouse. Hovering never changes anything on
+its own. Only the first key press after you move onto a window does, and only
+if you moved there in the last few seconds. Turn on "Switch on hover" if you
+want focus to follow the pointer without typing.
 
 ## How it decides
 
@@ -26,6 +27,9 @@ is held and then delivered to the new window in order.
 ## Settings
 
 - **Time window**: 0.5 to 10 seconds
+- **Switch on hover**: off by default. Focuses the window under the pointer
+  once it has been there for the delay (0.5 s by default), no typing needed.
+  Same rules as above, minus the key checks
 - **Redirect shortcuts**: on by default; turn off to only redirect plain typing
 - **Raise window when focusing**: always on for now (see
   [docs/focusing.md](docs/focusing.md))

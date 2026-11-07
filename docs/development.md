@@ -43,4 +43,6 @@ log stream --predicate 'subsystem == "com.chadlipscomb.CursorFocus"' --level inf
 - Excluded apps behave per their mode
 - Type fast right after hovering: nothing lost, nothing out of order
 - Toggle off: behaves like stock macOS
+- Switch on hover: resting on a window focuses it after the delay; sweeping
+  across windows quickly doesn't; cmd-tab while resting on another window sticks
 - Sleep/wake, plugging in a display, revoking and re-granting Accessibility
