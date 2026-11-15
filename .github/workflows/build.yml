@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, app-store]
   pull_request:
 
 jobs:
@@ -18,6 +18,13 @@ jobs:
             -scheme CursorFocus \
             -destination 'platform=macOS,arch=arm64' \
             -resultBundlePath TestResults.xcresult \
+            CODE_SIGN_IDENTITY=-
+      - name: Build the App Store variant
+        run: |
+          xcodebuild build -quiet \
+            -project CursorFocus.xcodeproj \
+            -scheme "CursorFocus App Store" \
+            -destination 'platform=macOS,arch=arm64' \
             CODE_SIGN_IDENTITY=-
       - name: Test summary
         if: always()
