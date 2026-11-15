@@ -45,4 +45,6 @@ log stream --predicate 'subsystem == "com.chadlipscomb.CursorFocus"' --level inf
 - Toggle off: behaves like stock macOS
 - Switch on hover: resting on a window focuses it after the delay; sweeping
   across windows quickly doesn't; cmd-tab while resting on another window sticks
+- First launch with no permission: setup window opens centered, no system
+  prompt until Allow… is clicked, row turns green once granted
 - Sleep/wake, plugging in a display, revoking and re-granting Accessibility

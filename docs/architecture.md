@@ -29,7 +29,9 @@ helper processes.
 | `WindowFocuser.swift` | Focuses a specific window: public AX calls, or a click on its top edge in the App Store build |
 | `Shortcut.swift` | Modifiers, key presses, passthrough shortcuts and defaults |
 | `Preferences.swift` | Settings in `UserDefaults`, exclusions, pause |
-| `Permissions.swift` | Permission check, prompt, and deep link (Accessibility, or Input Monitoring + event posting in the App Store build) |
+| `Permissions.swift` | The permissions this build needs, with status, prompt and deep link |
+| `SetupWindow.swift` | First-run window explaining each permission before asking for it |
+| `Build.swift` | Features that depend on the build (typing redirect off with `HOVER_ONLY`) |
 | `MenuContent.swift` | Menu bar menu and icon |
 | `SettingsView.swift`, `ExclusionSettings.swift`, `ShortcutSettings.swift` | Settings window tabs |
 
@@ -55,11 +57,19 @@ whatever has focus at that point.
 
 The **CursorFocus** scheme builds the direct-download app: not sandboxed,
 Accessibility for everything. The **CursorFocus App Store** scheme uses the
-AppStore configuration, which is sandboxed and compiles with `APP_STORE`.
-Only `Permissions` and `WindowFocuser` differ, behind `#if APP_STORE`. If the
-system won't allow an event tap that can swallow keys, `Engine` falls back to
-a listen-only tap, which still supports switch on hover. See
-[app-store.md](app-store.md).
+AppStore configuration, which is sandboxed and compiles with `APP_STORE` and
+`HOVER_ONLY`.
+
+- `APP_STORE` changes how windows are focused (`WindowFocuser` clicks the
+  top edge) and which permissions are required (`Permission.required`).
+- `HOVER_ONLY` (read through `Build.redirectsTyping`) drops typing redirect.
+  `Engine` watches the mouse with a global `NSEvent` monitor instead of an
+  event tap, switch on hover is always on, and Settings hides the typing
+  options.
+
+Without `HOVER_ONLY`, if the system won't allow an event tap that can swallow
+keys, `Engine` falls back to a listen-only tap, which still supports switch on
+hover. See [app-store.md](app-store.md).
 
 ## Focus tracking without AX
 
@@ -75,5 +85,5 @@ noticed a change.
 ## Tests
 
 `CursorFocusTests` is hosted in the app. The app delegate skips the tap and
-permission prompt when `XCTestConfigurationFilePath` is set. Tests use Swift
+setup window when `XCTestConfigurationFilePath` is set. Tests use Swift
 Testing and cover the policy rules.

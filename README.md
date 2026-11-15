@@ -49,11 +49,12 @@ xcodebuild -project CursorFocus.xcodeproj -scheme CursorFocus build
 xcodebuild -project CursorFocus.xcodeproj -scheme CursorFocus test
 ```
 
-On first launch macOS asks for Accessibility access. See
+On first launch a setup window explains the Accessibility permission and asks
+for it. See
 [docs/development.md](docs/development.md) for why that grant disappears after
 rebuilding and what to do about it.
 
-The `CursorFocus App Store` scheme builds the sandboxed variant. See
+The `CursorFocus App Store` scheme builds the sandboxed, hover-only variant. See
 [docs/app-store.md](docs/app-store.md).
 
 ## Docs

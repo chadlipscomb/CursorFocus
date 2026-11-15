@@ -96,8 +96,7 @@ Password fields use secure input, which hides keys from event taps anyway.
 - Settings…
 - Quit
 
-The icon changes when paused or disabled, and when Accessibility access is
-missing.
+The icon changes when paused or disabled, and when a permission is missing.
 
 ## Settings
 
@@ -105,7 +104,11 @@ missing.
   delay, redirect shortcuts, raise window, launch at login
 - Exclusions
 - Shortcuts: passthrough list, record, restore defaults
-- Permissions: Accessibility status and a link to System Settings
+- Permissions: status of each permission the build needs, with an Allow button
+
+On first launch, a setup window explains what the app does and why it needs
+each permission. System prompts only come from its Allow buttons. The menu
+reopens it (Finish Setup…) while anything is missing.
 
 ## Edge cases
 
