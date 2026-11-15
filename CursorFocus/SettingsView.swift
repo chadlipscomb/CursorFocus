@@ -10,8 +10,10 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
             ExclusionSettings(prefs: prefs)
                 .tabItem { Label("Exclusions", systemImage: "nosign") }
-            ShortcutSettings(prefs: prefs)
-                .tabItem { Label("Shortcuts", systemImage: "command") }
+            if Build.redirectsTyping {
+                ShortcutSettings(prefs: prefs)
+                    .tabItem { Label("Shortcuts", systemImage: "command") }
+            }
             PermissionSettings()
                 .tabItem { Label("Permissions", systemImage: "lock.shield") }
         }
@@ -28,21 +30,25 @@ struct GeneralSettings: View {
         Form {
             Toggle("Enabled", isOn: $prefs.enabled)
 
-            Section {
-                LabeledContent("Time window") {
-                    HStack {
-                        Slider(value: $prefs.window, in: 0.5...10, step: 0.5)
-                        Text(prefs.window.formatted(.number.precision(.fractionLength(1))) + " s")
-                            .monospacedDigit()
-                            .frame(width: 44, alignment: .trailing)
+            if Build.redirectsTyping {
+                Section {
+                    LabeledContent("Time window") {
+                        HStack {
+                            Slider(value: $prefs.window, in: 0.5...10, step: 0.5)
+                            Text(prefs.window.formatted(.number.precision(.fractionLength(1))) + " s")
+                                .monospacedDigit()
+                                .frame(width: 44, alignment: .trailing)
+                        }
                     }
+                } footer: {
+                    Text("How long after the pointer moves onto a window that typing still goes to it.")
                 }
-            } footer: {
-                Text("How long after the pointer moves onto a window that typing still goes to it.")
             }
 
             Section {
-                Toggle("Switch on hover", isOn: $prefs.focusOnHover)
+                if Build.redirectsTyping {
+                    Toggle("Switch on hover", isOn: $prefs.focusOnHover)
+                }
                 LabeledContent("Delay") {
                     HStack {
                         Slider(value: $prefs.hoverDelay, in: 0.1...2, step: 0.1)
@@ -51,15 +57,21 @@ struct GeneralSettings: View {
                             .frame(width: 44, alignment: .trailing)
                     }
                 }
-                .disabled(!prefs.focusOnHover)
+                .disabled(!prefs.hoverEnabled)
             } footer: {
-                Text("Focus the window under the pointer once it has been there this long, without waiting for you to type. The window comes to the front.")
+                if Build.redirectsTyping {
+                    Text("Focus the window under the pointer once it has been there this long, without waiting for you to type. The window comes to the front.")
+                } else {
+                    Text("How long the pointer has to rest on a window before it comes to the front.")
+                }
             }
 
-            Section {
-                Toggle("Redirect shortcuts", isOn: $prefs.redirectShortcuts)
-            } footer: {
-                Text("When off, only plain typing follows the pointer. ⌘ and ⌃ shortcuts stay with the focused window.")
+            if Build.redirectsTyping {
+                Section {
+                    Toggle("Redirect shortcuts", isOn: $prefs.redirectShortcuts)
+                } footer: {
+                    Text("When off, only plain typing follows the pointer. ⌘ and ⌃ shortcuts stay with the focused window.")
+                }
             }
 
             Section {

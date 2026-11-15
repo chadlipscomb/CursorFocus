@@ -17,7 +17,7 @@ enum Permission: String, CaseIterable, Identifiable {
     /// Everything this build needs, in the order it's asked for.
     static var required: [Permission] {
         #if APP_STORE
-        [.inputMonitoring, .postEvents]
+        Build.redirectsTyping ? [.inputMonitoring, .postEvents] : [.postEvents]
         #else
         [.accessibility]
         #endif
@@ -41,8 +41,10 @@ enum Permission: String, CaseIterable, Identifiable {
             "To see a key press before the focused app does, hold it while the window under the pointer comes forward, then deliver it there."
         case .inputMonitoring:
             "To see a key press before the focused app does, so it can be held while the window under the pointer comes forward."
-        case .postEvents:
+        case .postEvents where Build.redirectsTyping:
             "To deliver the held key presses to that window, and to click its title bar to bring it forward."
+        case .postEvents:
+            "To click the title bar of the window under the pointer, which brings it forward. That's all it's used for."
         }
     }
 

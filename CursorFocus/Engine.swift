@@ -30,6 +30,8 @@ final class Engine: ObservableObject {
     private let prefs: Preferences
     private let tracker = WindowTracker()
     private var tap: CFMachPort?
+    /// Used instead of the tap in the hover-only build.
+    private var mouseMonitor: Any?
 
     /// Non-nil while switching focus. Every key event lands here until the
     /// target window has focus, then gets posted again in order.
@@ -75,8 +77,9 @@ final class Engine: ObservableObject {
 
     @discardableResult
     func start() -> Bool {
-        if tap != nil { return true }
+        if tap != nil || mouseMonitor != nil { return true }
         guard Permission.allGranted else { return false }
+        if !Build.redirectsTyping { return startMouseMonitor() }
 
         let types: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .mouseMoved, .leftMouseDragged, .rightMouseDragged]
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
@@ -106,6 +109,24 @@ final class Engine: ObservableObject {
         return true
     }
 
+    /// The hover-only build never looks at the keyboard, and a global monitor
+    /// for mouse moves needs no permission at all.
+    private func startMouseMonitor() -> Bool {
+        mouseMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.mouseMoved, .leftMouseDragged, .rightMouseDragged]
+        ) { [weak self] event in
+            let point = event.cgEvent?.location ?? .zero
+            MainActor.assumeIsolated { self?.mouseMoved(to: point) }
+        }
+        running = mouseMonitor != nil
+        return running
+    }
+
+    private func mouseMoved(to point: CGPoint) {
+        tracker.mouseMoved(to: point)
+        scheduleHoverFocus()
+    }
+
     /// Returns true to let the event through.
     fileprivate func handle(_ type: CGEventType, _ event: CGEvent) -> Bool {
         switch type {
@@ -114,8 +135,7 @@ final class Engine: ObservableObject {
             return true
 
         case .mouseMoved, .leftMouseDragged, .rightMouseDragged:
-            tracker.mouseMoved(to: event.location)
-            scheduleHoverFocus()
+            mouseMoved(to: event.location)
             return true
 
         case .keyDown, .keyUp, .flagsChanged:
@@ -156,7 +176,7 @@ final class Engine: ObservableObject {
     }
 
     private func scheduleHoverFocus() {
-        guard prefs.focusOnHover, prefs.isActive else {
+        guard prefs.hoverEnabled, prefs.isActive else {
             hoverTask?.cancel()
             hoverTarget = nil
             return

@@ -86,6 +86,11 @@ final class Preferences: ObservableObject {
         scheduleResume()
     }
 
+    /// The hover-only build has nothing else to do, so it's always on there.
+    var hoverEnabled: Bool {
+        focusOnHover || !Build.redirectsTyping
+    }
+
     /// Enabled and not paused.
     var isActive: Bool {
         enabled && pausedUntil == nil
