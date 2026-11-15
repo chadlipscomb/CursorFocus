@@ -9,7 +9,11 @@ enum SetupWindow {
 
     static func show() {
         if window == nil {
-            let window = NSWindow(contentViewController: NSHostingController(rootView: SetupView { close() }))
+            let controller = NSHostingController(rootView: SetupView { close() })
+            let window = NSWindow(contentViewController: controller)
+            // Size it before centering, or it centers an empty window and the
+            // content grows down from there.
+            window.setContentSize(controller.view.fittingSize)
             window.title = "CursorFocus"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
