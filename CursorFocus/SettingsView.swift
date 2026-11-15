@@ -2,7 +2,6 @@ import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var engine: Engine
     @ObservedObject var prefs: Preferences
 
     var body: some View {
@@ -13,7 +12,7 @@ struct SettingsView: View {
                 .tabItem { Label("Exclusions", systemImage: "nosign") }
             ShortcutSettings(prefs: prefs)
                 .tabItem { Label("Shortcuts", systemImage: "command") }
-            PermissionSettings(engine: engine)
+            PermissionSettings()
                 .tabItem { Label("Permissions", systemImage: "lock.shield") }
         }
         .frame(width: 460)
@@ -88,25 +87,24 @@ struct GeneralSettings: View {
 }
 
 struct PermissionSettings: View {
-    @ObservedObject var engine: Engine
+    @State private var granted: Set<Permission> = []
 
     var body: some View {
         Form {
             Section {
-                LabeledContent(Permissions.name) {
-                    if engine.running {
-                        Label("Granted", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    } else {
-                        Button("Open System Settings…") {
-                            Permissions.openSettings()
-                        }
-                    }
+                ForEach(Permission.required) { permission in
+                    PermissionRow(permission: permission, granted: granted.contains(permission))
                 }
             } footer: {
-                Text("Used to see key presses before the focused app does, and to bring the window under the pointer forward. CursorFocus picks the change up on its own, no relaunch needed.")
+                Text("CursorFocus picks changes up on its own, no relaunch needed. Nothing you type is stored or sent anywhere.")
             }
         }
         .formStyle(.grouped)
+        .task {
+            while !Task.isCancelled {
+                granted = Set(Permission.required.filter(\.granted))
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
     }
 }

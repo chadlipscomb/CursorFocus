@@ -13,7 +13,7 @@ struct CursorFocusApp: App {
         }
 
         Settings {
-            SettingsView(engine: appDelegate.engine, prefs: prefs)
+            SettingsView(prefs: prefs)
         }
     }
 }
@@ -26,8 +26,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Hosted unit tests launch the app too. No tap or prompts there.
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return }
 
-        if !Permissions.granted {
-            Permissions.request()
+        // Explain first. The system prompts come from the setup window's
+        // buttons, so nobody gets asked for keyboard access out of nowhere.
+        if !Permission.allGranted {
+            SetupWindow.show()
         }
         Task { await engine.startWhenAllowed() }
     }

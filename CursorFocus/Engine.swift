@@ -76,7 +76,7 @@ final class Engine: ObservableObject {
     @discardableResult
     func start() -> Bool {
         if tap != nil { return true }
-        guard Permissions.granted else { return false }
+        guard Permission.allGranted else { return false }
 
         let types: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .mouseMoved, .leftMouseDragged, .rightMouseDragged]
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }

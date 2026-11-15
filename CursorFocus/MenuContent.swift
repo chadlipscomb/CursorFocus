@@ -22,10 +22,8 @@ struct MenuContent: View {
 
     var body: some View {
         if !engine.running {
-            Text("Needs \(Permissions.name) access")
-            Button("Open \(Permissions.name) Settings…") {
-                Permissions.openSettings()
-            }
+            Text("Needs your permission to work")
+            Button("Finish Setup…") { SetupWindow.show() }
             Divider()
         } else if engine.listenOnly {
             Text("Typing can't be redirected, only switch on hover works")
